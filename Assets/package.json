@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-router-dom": "6.14.1",
+    "reflect-metadata": "0.1.13"
+  },
+  "devDependencies": {
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6",
+    "@types/react-router": "5.1.20",
+    "@types/react-router-dom": "5.3.3",
+    "@typescript-eslint/eslint-plugin": "6.0.0",
+    "@typescript-eslint/parser": "6.0.0",
+    "esbuild": "0.18.11",
+    "eslint": "8.44.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-react": "7.32.2",
+    "tailwindcss": "3.3.2",
+    "typescript": "5.1.6"
+  },
+  "scripts": {
+    "build:js": "npx esbuild --bundle --format=esm --sourcemap --outfile=../Public/app.js src/App.tsx",
+    "watch:js": "npm run build:js -- --watch",
+    "build:css": "npx tailwind --input css/tailwind.css --output ../Public/app.css --content \"./**/*.tsx\"",
+    "watch:css": "npm run build:css -- --watch"
+  }
+}
