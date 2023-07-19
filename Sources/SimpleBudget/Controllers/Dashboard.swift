@@ -3,7 +3,8 @@ import Vapor
 
 struct DashboardController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let dashboard = routes.grouped("api", "dashboard").grouped(Authenticator())
+    let dashboard = routes.grouped("api", "dashboard").grouped(User.sessionAuthenticator()).grouped(
+      User.guardMiddleware())
 
     dashboard.get(use: index)
   }
@@ -41,7 +42,7 @@ struct DashboardController: RouteCollection {
 
         return memo - goalService.amortized()
       })
-    
+
     let calendar = Calendar(identifier: .gregorian)
     let startOfMonthComponents = calendar.dateComponents([.year, .month], from: Date())
     guard let startOfMonth = calendar.date(from: startOfMonthComponents) else {
@@ -53,14 +54,14 @@ struct DashboardController: RouteCollection {
     guard let endOfMonth = calendar.date(byAdding: dateComponents, to: startOfMonth) else {
       throw Abort(.internalServerError)
     }
-    
+
     let daysRemaining = calendar.dateComponents([.day], from: Date(), to: endOfMonth)
     guard let day = daysRemaining.day else {
       throw Abort(.internalServerError)
     }
     return [
       "total": (accountTotal + savingTotal + goalTotal).description,
-      "daysRemaining": day.description
+      "daysRemaining": day.description,
     ]
   }
 }

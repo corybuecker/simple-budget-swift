@@ -1,11 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNumber,
-  IsPositive,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsNumber, IsPositive, IsString, Length } from 'class-validator';
 
 export class Saving {
   public id!: string;

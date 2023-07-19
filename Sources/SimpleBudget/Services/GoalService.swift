@@ -2,7 +2,7 @@ import Foundation
 
 struct GoalService {
   private let goal: Goal
-  
+
   private let day: Double = 60 * 60 * 24.0
   private let week: Double = 60 * 60 * 24.0 * 7
   private let month: Double = 60 * 60 * 24.0 * 30
@@ -17,19 +17,20 @@ struct GoalService {
     if Date() >= self.goal.completeAt {
       return self.goal.amount
     }
-    
+
     return dailyAmount() * Decimal(elapsedDays())
   }
-  
+
   private func dailyAmount() -> Decimal {
-    return self.goal.amount / Decimal(DateInterval(start: startDate(), end: self.goal.completeAt).duration / day)
+    return self.goal.amount
+      / Decimal(DateInterval(start: startDate(), end: self.goal.completeAt).duration / day)
   }
-  
+
   private func elapsedDays() -> Double {
     if Date() < startDate() {
       return 0
     }
-    
+
     return DateInterval(start: startDate(), end: Date()).duration / day
   }
 

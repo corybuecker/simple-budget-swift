@@ -6,9 +6,16 @@ class DashboardReport {
 }
 
 const dashboardLoader = async () => {
-  const rawAccounts = await fetch('/api/dashboard');
-  const reportObject = (await rawAccounts.json()) as any;
-  return plainToInstance(DashboardReport, reportObject);
+  const rawData = await fetch('/api/dashboard');
+
+  if (!rawData.ok) {
+    if (rawData.status === 401) {
+      window.location.href = '/authentication';
+    }
+    throw rawData;
+  }
+
+  return plainToInstance(DashboardReport, await rawData.json());
 };
 
 const Dashboard = () => {

@@ -1,14 +1,20 @@
 FROM swift:latest AS builder
 
 RUN apt update
-RUN apt install curl
+RUN apt-get install -y curl
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt install -y nodejs
+RUN apt-get install -y nodejs
 
-COPY . /app/
+COPY Package.swift Package.resolved /app/
 WORKDIR /app
 
-RUN swift build -c release
+RUN swift package resolve
+
+COPY Assets /app/Assets
+COPY Public /app/Public
+COPY Sources /app/Sources
+
+RUN swift build -c release -Xswiftc -g
 
 WORKDIR /app/Assets
 
@@ -20,3 +26,7 @@ FROM swift:slim
 
 COPY --from=builder /app/Public /app/Public
 COPY --from=builder /app/.build/release/SimpleBudget /app/SimpleBudget
+
+WORKDIR /app
+
+CMD ["/app/SimpleBudget", "serve", "--bind", "0.0.0.0:8080"]

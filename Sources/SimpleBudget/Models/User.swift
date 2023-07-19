@@ -2,7 +2,7 @@ import Fluent
 import Foundation
 import Vapor
 
-final class User: Model, Authenticatable, Content {
+final class User: ModelSessionAuthenticatable, Content {
   static let schema: String = "users"
 
   @ID()
@@ -13,6 +13,9 @@ final class User: Model, Authenticatable, Content {
 
   @Timestamp(key: "updated_at", on: .update)
   var updatedAt: Date?
+
+  @Field(key: "email")
+  var email: String
 
   @Children(for: \Account.$user)
   var accounts: [Account]

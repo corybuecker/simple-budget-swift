@@ -1,6 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
 import {
-  IsDate,
   IsDateString,
   IsEnum,
   IsNumber,
