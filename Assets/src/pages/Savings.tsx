@@ -1,26 +1,22 @@
 import { plainToInstance } from 'class-transformer';
-import { Outlet, Params, useRouteError } from 'react-router';
+import { Outlet, Params } from 'react-router';
 import { List } from '../components/Savings/List';
 import { Saving } from '../components/Savings/types';
 import { New } from '../components/Savings/New';
 import { Edit } from '../components/Savings/Edit';
-import { validate } from 'class-validator';
 
 const Layout = () => {
   return <Outlet />;
 };
 
 const createSaving = async ({ request }: { request: Request }) => {
-  const saving = plainToInstance(Saving, await request.json(), {
-    excludeExtraneousValues: true,
-  });
-
-  const errors = await validate(saving);
-  if (errors.length) throw errors;
-
   await fetch('/api/savings', {
     method: 'POST',
-    body: JSON.stringify(saving),
+    body: JSON.stringify(
+      plainToInstance(Saving, await request.json(), {
+        excludeExtraneousValues: true,
+      }),
+    ),
     headers: [['content-type', 'application/json']],
   });
 
@@ -34,16 +30,13 @@ const updateSaving = async ({
   request: Request;
   params: Params<'id'>;
 }) => {
-  const saving = plainToInstance(Saving, await request.json(), {
-    excludeExtraneousValues: true,
-  });
-
-  const errors = await validate(saving);
-  if (errors.length) throw errors;
-
   await fetch(`/api/savings/${params.id}`, {
     method: 'PATCH',
-    body: JSON.stringify(saving),
+    body: JSON.stringify(
+      plainToInstance(Saving, await request.json(), {
+        excludeExtraneousValues: true,
+      }),
+    ),
     headers: [['content-type', 'application/json']],
   });
 
@@ -58,7 +51,10 @@ const savingLoader = async ({ params }: { params: { id: string } }) => {
 
 const savingsLoader = async () => {
   const rawSavings = await fetch('/api/savings');
-  const savingsObjects = (await rawSavings.json()) as unknown as any[];
+  const savingsObjects = (await rawSavings.json()) as unknown as Record<
+    string,
+    number | string
+  >[];
   return plainToInstance(Saving, savingsObjects);
 };
 

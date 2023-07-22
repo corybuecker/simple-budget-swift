@@ -10,6 +10,7 @@
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "0.5.4",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "@types/react-router": "5.1.20",
@@ -19,6 +20,7 @@
     "esbuild": "0.18.11",
     "eslint": "8.44.0",
     "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-prettier": "5.0.0",
     "eslint-plugin-react": "7.32.2",
     "tailwindcss": "3.3.2",
     "typescript": "5.1.6"
@@ -26,7 +28,7 @@
   "scripts": {
     "build:js": "npx esbuild --bundle --format=esm --sourcemap --outfile=../Public/app.js src/App.tsx",
     "watch:js": "npm run build:js -- --watch",
-    "build:css": "npx tailwind --input css/tailwind.css --output ../Public/app.css --content \"./**/*.tsx\"",
+    "build:css": "npx tailwind --input css/tailwind.css --output ../Public/app.css",
     "watch:css": "npm run build:css -- --watch"
   }
 }

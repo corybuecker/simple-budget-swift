@@ -11,7 +11,6 @@ export const List = () => {
   return (
     <div>
       <Link to={'new'}>New</Link>
-
       {goals.map((goal) => (
         <div key={goal.id}>
           <Link to={`${goal.id}/edit`}>{goal.name}</Link>

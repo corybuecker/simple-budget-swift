@@ -8,7 +8,8 @@ struct SavingBody: Content {
 
 struct SavingsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let savings = routes.grouped("api", "savings").grouped(Authenticator())
+    let savings = routes.grouped("api", "savings").grouped(User.sessionAuthenticator()).grouped(
+      User.guardMiddleware())
 
     savings.get(use: index)
     savings.get(":id", use: edit)
@@ -52,7 +53,7 @@ struct SavingsController: RouteCollection {
   func create(request: Request) async throws -> Saving {
     let savingBody = try request.content.decode(SavingBody.self)
 
-    let saving = try Saving(request.auth.get(User.self)?.requireID())
+    let saving = try Saving(request.auth.require(User.self).id)
     saving.name = savingBody.name
     saving.amount = savingBody.amount
 

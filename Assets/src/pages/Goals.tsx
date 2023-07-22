@@ -1,30 +1,22 @@
 import { plainToInstance } from 'class-transformer';
-import { Outlet, Params, useRouteError } from 'react-router';
+import { Outlet, Params } from 'react-router';
 import { List } from '../components/Goals/List';
 import { Goal } from '../components/Goals/types';
 import { New } from '../components/Goals/New';
 import { Edit } from '../components/Goals/Edit';
-import { validate } from 'class-validator';
 
 const Layout = () => {
   return <Outlet />;
 };
 
 const createGoal = async ({ request }: { request: Request }) => {
-  const content = await request.json();
-  console.log(content);
-  const goal = plainToInstance(Goal, content, {
-    excludeExtraneousValues: true,
-  });
-
-  const errors = await validate(goal);
-  if (errors.length) throw errors;
-
-  console.log(goal);
-
   await fetch('/api/goals', {
     method: 'POST',
-    body: JSON.stringify(goal),
+    body: JSON.stringify(
+      plainToInstance(Goal, await request.json(), {
+        excludeExtraneousValues: true,
+      }),
+    ),
     headers: [['content-type', 'application/json']],
   });
 
@@ -38,16 +30,13 @@ const updateGoal = async ({
   request: Request;
   params: Params<'id'>;
 }) => {
-  const goal = plainToInstance(Goal, await request.json(), {
-    excludeExtraneousValues: true,
-  });
-
-  const errors = await validate(goal);
-  if (errors.length) throw errors;
-
   await fetch(`/api/goals/${params.id}`, {
     method: 'PATCH',
-    body: JSON.stringify(goal),
+    body: JSON.stringify(
+      plainToInstance(Goal, await request.json(), {
+        excludeExtraneousValues: true,
+      }),
+    ),
     headers: [['content-type', 'application/json']],
   });
 
@@ -62,7 +51,10 @@ const goalLoader = async ({ params }: { params: { id: string } }) => {
 
 const goalsLoader = async () => {
   const rawGoals = await fetch('/api/goals');
-  const goalsObjects = (await rawGoals.json()) as unknown as any[];
+  const goalsObjects = (await rawGoals.json()) as unknown as Record<
+    string,
+    number | string
+  >[];
   return plainToInstance(Goal, goalsObjects);
 };
 

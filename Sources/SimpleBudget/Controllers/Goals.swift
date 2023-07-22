@@ -14,7 +14,8 @@ enum GoalsControllerErrors: Error {
 
 struct GoalsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let goals = routes.grouped("api", "goals").grouped(Authenticator())
+    let goals = routes.grouped("api", "goals").grouped(User.sessionAuthenticator()).grouped(
+      User.guardMiddleware())
 
     goals.get(use: index)
     goals.get(":id", use: edit)
@@ -84,7 +85,7 @@ struct GoalsController: RouteCollection {
     })
     let goalBody = try request.content.decode(GoalBody.self, using: decoder)
 
-    let goal = try Goal(request.auth.get(User.self)?.requireID())
+    let goal = try Goal(request.auth.require(User.self).id)
     goal.name = goalBody.name
     goal.amount = goalBody.amount
     goal.completeAt = goalBody.completeAt
