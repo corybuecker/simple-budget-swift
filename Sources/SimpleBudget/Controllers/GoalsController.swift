@@ -8,6 +8,15 @@ struct GoalBody: Content {
   var recurrence: GoalRecurrence
 }
 
+struct AmortizedGoal: Content {
+  var id: UUID?
+  var name: String
+  var amount: Decimal
+  var completeAt: Date
+  var recurrence: GoalRecurrence
+  var amortized: Decimal
+}
+
 enum GoalsControllerErrors: Error {
   case invalidDate
 }
@@ -24,8 +33,16 @@ struct GoalsController: RouteCollection {
     goals.delete(":id", use: delete)
   }
 
-  func index(request: Request) async throws -> [Goal] {
-    try await Goal.query(on: request.db).all()
+  func index(request: Request) async throws -> [AmortizedGoal] {
+    let goals = try await Goal.query(on: request.db).all()
+    let amortizedGoals = goals.map { goal in
+      let goalsService = GoalService(goal: goal)
+      return AmortizedGoal(
+        id: goal.id,
+        name: goal.name, amount: goal.amount, completeAt: goal.completeAt,
+        recurrence: goal.recurrence, amortized: goalsService.amortized())
+    }
+    return amortizedGoals
   }
 
   func edit(request: Request) async throws -> Goal {

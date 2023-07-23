@@ -20,7 +20,7 @@ struct AccountsController: RouteCollection {
   }
 
   func index(request: Request) async throws -> [Account] {
-    try await Account.query(on: request.db).all()
+    try await Account.query(on: request.db).sort(\Account.$name).all()
   }
 
   func edit(request: Request) async throws -> Account {

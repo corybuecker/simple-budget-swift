@@ -6,7 +6,11 @@ import { New } from '../components/Savings/New';
 import { Edit } from '../components/Savings/Edit';
 
 const Layout = () => {
-  return <Outlet />;
+  return (
+    <div className="p-2">
+      <Outlet />
+    </div>
+  );
 };
 
 const createSaving = async ({ request }: { request: Request }) => {
