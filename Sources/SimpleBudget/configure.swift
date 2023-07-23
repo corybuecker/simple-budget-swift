@@ -27,9 +27,6 @@ public func configure(_ app: Application) async throws {
   app.logger.logLevel = .debug
 
   app.sessions.use(.fluent(.psql))
-  app.sessions.configuration.cookieFactory = { sessionID in
-    HTTPCookies.Value.init(string: sessionID.string, expires: Date() + 10 * 60)
-  }
   app.middleware.use(app.sessions.middleware)
 
   app.migrations.add(UsersMigration())
@@ -37,6 +34,8 @@ public func configure(_ app: Application) async throws {
   app.migrations.add(SavingsMigration())
   app.migrations.add(GoalsMigration())
   app.migrations.add(SessionRecord.migration)
+  app.migrations.add(SessionTokensMigration())
+
   try await app.autoMigrate()
 
   try routes(app)

@@ -1,5 +1,4 @@
 import Fluent
-import Foundation
 import Vapor
 
 final class Saving: Model, Content {

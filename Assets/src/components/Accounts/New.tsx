@@ -31,8 +31,14 @@ export const New = () => {
         {errored.name}
       </div>
       <div>
-        <label htmlFor="amount">Amount</label>
+        <label
+          className="block text-xs font-medium text-gray-700"
+          htmlFor="amount"
+        >
+          Amount
+        </label>
         <input
+          className="mt-1 w-full md:w-64 rounded-md border-gray-200 shadow-sm sm:text-sm"
           defaultValue=""
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             handleChange({ amount: e.target.value });
@@ -44,7 +50,12 @@ export const New = () => {
         {errored.amount}
       </div>
       <div>
-        <label htmlFor="debt">Debt</label>
+        <label
+          className="block text-xs font-medium text-gray-700"
+          htmlFor="debt"
+        >
+          Debt
+        </label>
         <input
           type="checkbox"
           name="debt"

@@ -1,5 +1,9 @@
 import { plainToInstance } from 'class-transformer';
-import { redirect, useLoaderData } from 'react-router';
+import {
+  isRouteErrorResponse,
+  useLoaderData,
+  useRouteError,
+} from 'react-router';
 
 class DashboardReport {
   public total!: number;
@@ -10,14 +14,26 @@ const dashboardLoader = async () => {
   const rawData = await fetch('/api/dashboard');
 
   if (!rawData.ok) {
-    if (rawData.status === 401) {
-      return redirect('/authentication');
-    }
     throw rawData;
   }
 
   return plainToInstance(DashboardReport, await rawData.json());
 };
+
+function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 401) {
+      window.location.replace('/authentication');
+      return <div>Logging in...</div>;
+    }
+
+    return <div>{JSON.stringify(error)}</div>;
+  }
+
+  return <div>{JSON.stringify(error)}</div>;
+}
 
 const Dashboard = () => {
   const data = useLoaderData() as unknown as DashboardReport;
@@ -36,4 +52,5 @@ export const DashboardPage = {
   path: 'dashboard',
   element: <Dashboard />,
   loader: dashboardLoader,
+  errorElement: <ErrorBoundary />,
 };

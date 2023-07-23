@@ -14,41 +14,41 @@ export const List = () => {
   };
 
   return (
-    <div className="flex flex-col">
-      <Link
-        className="bg-blue-800 transition-colors hover:bg-blue-600 active:bg-blue-600 w-24 text-white text-center p-1 py-2 rounded"
-        to={'new'}
-      >
-        New
-      </Link>
-      <div className="grid grid-cols-4 mt-4 gap-2">
-        <div className="col-span-2 md:col-span-1">Name</div>
-        <div>Amount</div>
-        <div className="hidden md:block">Debt</div>
-        <div></div>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-6">
+        <h1 className="text-xl">Accounts</h1>
+        <Link
+          className="bg-blue-800 transition-colors hover:bg-blue-600 active:bg-blue-600 w-24 text-white text-center p-1 py-2 rounded"
+          to={'new'}
+        >
+          New
+        </Link>
+      </div>
+      <div className="flex flex-col gap-4">
         {accounts.map((account) => (
           <Fragment key={account.id}>
-            <div className="col-span-2 md:col-span-1 whitespace-nowrap overflow-hidden text-ellipsis">
-              <Link
-                className="underline hover:no-underline active:no-underline"
-                to={`${account.id}/edit`}
-              >
-                {account.name}
-              </Link>
-            </div>
-            <div>
-              {dollarFormatter.format(
-                account.debt ? account.amount * -1 : account.amount,
-              )}
-            </div>
-            <div className="hidden md:block">{account.debt ? 'Yes' : 'No'}</div>
-            <button
-              className="flex gap-1 items-center"
-              onClick={async () => await handleDelete(account.id)}
+            <Link
+              className="transition-shadow p-2 border border-slate-400 shadow active:shadow-none rounded"
+              to={`${account.id}/edit`}
             >
-              <TrashIcon className="w-4" />
-              Delete
-            </button>
+              {account.name}
+
+              <div>
+                {dollarFormatter.format(
+                  account.debt ? account.amount * -1 : account.amount,
+                )}
+              </div>
+              <button
+                className="flex gap-1 items-center"
+                onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.preventDefault();
+                  await handleDelete(account.id);
+                }}
+              >
+                <TrashIcon className="w-4" />
+                Delete
+              </button>
+            </Link>
           </Fragment>
         ))}
       </div>

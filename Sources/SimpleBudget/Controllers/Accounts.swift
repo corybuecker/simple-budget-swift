@@ -9,8 +9,9 @@ struct AccountBody: Content {
 
 struct AccountsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let accounts = routes.grouped("api", "accounts").grouped(User.sessionAuthenticator()).grouped(
-      User.guardMiddleware())
+    let accounts = routes.grouped("api", "accounts")
+      .grouped(SessionTokenAuthenticator())
+      .grouped(SessionToken.guardMiddleware())
 
     accounts.get(use: index)
     accounts.get(":id", use: edit)
@@ -55,7 +56,7 @@ struct AccountsController: RouteCollection {
   func create(request: Request) async throws -> Account {
     let accountBody = try request.content.decode(AccountBody.self)
 
-    let account = try Account(request.auth.require(User.self).id)
+    let account = try Account(request.auth.require(SessionToken.self).user.requireID())
     account.name = accountBody.name
     account.amount = accountBody.amount
     account.debt = accountBody.debt
