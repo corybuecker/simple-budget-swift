@@ -7,11 +7,11 @@ struct EnvironmentError: Error {}
 
 public func configure(_ app: Application) async throws {
   app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-  
+
   guard let databaseHost = Environment.get("DATABASE_HOST") else {
     throw EnvironmentError()
   }
-  
+
   app.databases.use(
     .postgres(
       configuration: SQLPostgresConfiguration(

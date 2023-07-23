@@ -36,7 +36,7 @@ export function useForm<M extends object>(
     const keys = Object.keys(formValue) as Array<keyof M>;
     const key = keys[0] as keyof M;
 
-    const revisedTouched = { ...touched, [key]: true };
+    const revisedTouched: TouchValues<M> = { ...touched, [key]: true };
 
     const revisedFormValues: FormValues<M> = { ...values, ...formValue };
 
@@ -45,7 +45,7 @@ export function useForm<M extends object>(
     });
 
     const errors = await validate(unvalidatedModel);
-    let revisedErrored = {};
+    let revisedErrored: ErrorValues<M> = {};
 
     for (const error of errors) {
       if (Object.keys(revisedTouched).includes(error.property)) {

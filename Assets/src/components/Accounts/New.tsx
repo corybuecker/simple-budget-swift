@@ -10,8 +10,6 @@ export const New = () => {
     'post',
   );
 
-  console.log(values);
-
   return (
     <Form onSubmit={(e) => e.preventDefault()}>
       <div>
@@ -22,7 +20,7 @@ export const New = () => {
           Name
         </label>
         <input
-          className="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+          className="mt-1 w-full md:w-64 rounded-md border-gray-200 shadow-sm sm:text-sm"
           value={values.name || ''}
           name="name"
           id="name"

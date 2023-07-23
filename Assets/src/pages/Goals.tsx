@@ -6,7 +6,11 @@ import { New } from '../components/Goals/New';
 import { Edit } from '../components/Goals/Edit';
 
 const Layout = () => {
-  return <Outlet />;
+  return (
+    <div className="p-2">
+      <Outlet />
+    </div>
+  );
 };
 
 const createGoal = async ({ request }: { request: Request }) => {
@@ -51,11 +55,8 @@ const goalLoader = async ({ params }: { params: { id: string } }) => {
 
 const goalsLoader = async () => {
   const rawGoals = await fetch('/api/goals');
-  const goalsObjects = (await rawGoals.json()) as unknown as Record<
-    string,
-    number | string
-  >[];
-  return plainToInstance(Goal, goalsObjects);
+  const goals: unknown[] = await rawGoals.json();
+  return plainToInstance(Goal, goals, { excludeExtraneousValues: true });
 };
 
 export const GoalsPage = {

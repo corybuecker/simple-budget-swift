@@ -1,8 +1,9 @@
 import { plainToInstance } from 'class-transformer';
-import { useLoaderData } from 'react-router';
+import { redirect, useLoaderData } from 'react-router';
 
 class DashboardReport {
-  public spendable!: number;
+  public total!: number;
+  public daysRemaining!: number;
 }
 
 const dashboardLoader = async () => {
@@ -10,7 +11,7 @@ const dashboardLoader = async () => {
 
   if (!rawData.ok) {
     if (rawData.status === 401) {
-      window.location.href = '/authentication';
+      return redirect('/authentication');
     }
     throw rawData;
   }
@@ -19,14 +20,14 @@ const dashboardLoader = async () => {
 };
 
 const Dashboard = () => {
-  const data = useLoaderData() as Record<string, string>;
+  const data = useLoaderData() as unknown as DashboardReport;
   return (
     <p>
-      {Number(data['total'])}
+      {Number(data.total)}
       <br />
-      {Number(data['daysRemaining'])}
+      {Number(data.daysRemaining)}
       <br />
-      {Number(data['total']) / Number(data['daysRemaining'])}
+      {Number(data.total) / Number(data.daysRemaining)}
     </p>
   );
 };

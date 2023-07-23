@@ -18,6 +18,7 @@ export enum GoalRecurrence {
 }
 
 export class Goal {
+  @Expose({ toClassOnly: true })
   public id!: string;
 
   @IsString()
@@ -39,4 +40,7 @@ export class Goal {
   @IsEnum(GoalRecurrence)
   @Expose()
   public recurrence!: GoalRecurrence;
+
+  @Expose({ toClassOnly: true })
+  public amortized!: number;
 }
