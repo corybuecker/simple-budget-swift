@@ -47,7 +47,7 @@ const updateSaving = async ({
   return null;
 };
 
-const savingLoader = async ({ params }: { params: { id: string } }) => {
+const savingLoader = async ({ params }: { params: Params<'id'> }) => {
   const rawSaving = await fetch(`/api/savings/${params.id}`);
   const savingObject = await rawSaving.json();
   return plainToInstance(Saving, savingObject);

@@ -47,7 +47,7 @@ const updateGoal = async ({
   return null;
 };
 
-const goalLoader = async ({ params }: { params: { id: string } }) => {
+const goalLoader = async ({ params }: { params: Params<'id'> }) => {
   const rawGoal = await fetch(`/api/goals/${params.id}`);
   const goalObject = await rawGoal.json();
   return plainToInstance(Goal, goalObject);

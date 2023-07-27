@@ -1,4 +1,4 @@
-import Foundation
+import Vapor
 
 struct GoalService {
   private let goal: Goal
@@ -52,14 +52,5 @@ struct GoalService {
       }
       return createdAt
     }
-  }
-
-  private func daysRemaining() -> Double {
-    if Date() > self.goal.completeAt {
-      return 0
-    }
-
-    let interval = DateInterval(start: Date(), end: self.goal.completeAt)
-    return interval.duration / day
   }
 }

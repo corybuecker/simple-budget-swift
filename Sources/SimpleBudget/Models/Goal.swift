@@ -1,5 +1,4 @@
 import Fluent
-import Foundation
 import Vapor
 
 enum GoalRecurrence: String, Codable {

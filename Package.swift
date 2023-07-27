@@ -10,7 +10,6 @@ let package = Package(
     .package(url: "https://github.com/vapor/vapor.git", from: "4.77.2"),
     .package(url: "https://github.com/vapor/fluent.git", from: "4.8.0"),
     .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.8.0"),
-    .package(url: "https://github.com/apple/swift-format.git", from: "508.0.1"),
   ],
   targets: [
     .executableTarget(name: "SimpleBudget", dependencies: [

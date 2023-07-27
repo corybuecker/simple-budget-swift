@@ -3,18 +3,23 @@ import Vapor
 
 struct DashboardController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let dashboard = routes.grouped("api", "dashboard").grouped(User.sessionAuthenticator()).grouped(
-      User.guardMiddleware())
+    let dashboard = routes.grouped("api", "dashboard")
+      .grouped(SessionTokenAuthenticator())
+      .grouped(SessionToken.guardMiddleware())
 
     dashboard.get(use: index)
   }
 
   func index(request: Request) async throws -> [String: String] {
+    let sessionToken = try request.auth.require(SessionToken.self)
+
     guard
       let user = try await User.query(on: request.db)
         .with(\User.$accounts)
         .with(\User.$savings)
-        .with(\User.$goals).first()
+        .with(\User.$goals)
+        .filter(\User.$id == sessionToken.user.requireID())
+        .first()
     else {
       throw Abort(.notFound)
     }

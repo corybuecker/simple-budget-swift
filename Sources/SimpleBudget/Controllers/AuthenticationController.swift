@@ -1,5 +1,4 @@
 import Fluent
-import Foundation
 import Vapor
 
 struct OidcResponse: Content {
@@ -26,10 +25,9 @@ struct AuthenticationController: RouteCollection {
   }
 
   func boot(routes: RoutesBuilder) throws {
-    let authentication = routes.grouped("authentication").grouped(User.sessionAuthenticator())
+    let authentication = routes.grouped("authentication").grouped(SessionTokenAuthenticator())
 
     authentication.get(use: redirect)
-
     authentication.get("callback", use: create)
   }
 
@@ -102,7 +100,11 @@ struct AuthenticationController: RouteCollection {
       throw Abort(.notFound)
     }
 
-    request.auth.login(user)
+    let sessionToken = try SessionToken(user.requireID())
+    try await sessionToken.save(on: request.db)
+
+    request.auth.login(sessionToken)
+
     return request.redirect(to: "/dashboard")
   }
 }
