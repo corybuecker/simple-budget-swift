@@ -1,5 +1,6 @@
 import Fluent
 import FluentPostgresDriver
+import Leaf
 import NIOSSL
 import Vapor
 
@@ -28,6 +29,8 @@ public func configure(_ app: Application) async throws {
 
   app.sessions.use(.fluent(.psql))
   app.middleware.use(app.sessions.middleware)
+
+  app.views.use(.leaf)
 
   app.migrations.add(UsersMigration())
   app.migrations.add(AccountsMigration())

@@ -7,7 +7,7 @@ struct AccountBody: Content {
   var debt: Bool
 }
 
-struct AccountsController: RouteCollection {
+struct ApiAccountsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
     let accounts = routes.grouped("api", "accounts")
       .grouped(SessionTokenAuthenticator())

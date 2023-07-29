@@ -89,7 +89,7 @@ fastlane/test_output
 
 iOSInjectionProject/
 
-Assets/node_modules
+Resources/node_modules
 Public/app.css
 Public/app.js
 .swiftpm

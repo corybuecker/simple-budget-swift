@@ -27,9 +27,9 @@
     "typescript": "5.1.6"
   },
   "scripts": {
-    "build:js": "npx esbuild --bundle --format=esm --sourcemap --outfile=../Public/app.js src/App.tsx",
+    "build:js": "npx esbuild --bundle --format=esm --sourcemap --outfile=../Public/app.js Assets/src/App.tsx",
     "watch:js": "npm run build:js -- --watch",
-    "build:css": "npx tailwind --input css/tailwind.css --output ../Public/app.css",
+    "build:css": "npx tailwind --input Assets/css/tailwind.css --output ../Public/app.css",
     "watch:css": "npm run build:css -- --watch"
   }
 }

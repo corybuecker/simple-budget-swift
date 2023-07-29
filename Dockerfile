@@ -10,13 +10,13 @@ WORKDIR /app
 
 RUN swift package resolve
 
-COPY Assets /app/Assets
+COPY Resources /app/Resources
 COPY Public /app/Public
 COPY Sources /app/Sources
 
 RUN swift build -c release -Xswiftc -g
 
-WORKDIR /app/Assets
+WORKDIR /app/Resources
 
 RUN npm ci
 RUN npm run build:js
@@ -24,6 +24,7 @@ RUN npm run build:css
 
 FROM swift:slim
 
+COPY --from=builder /app/Resources /app/Resources
 COPY --from=builder /app/Public /app/Public
 COPY --from=builder /app/.build/release/SimpleBudget /app/SimpleBudget
 

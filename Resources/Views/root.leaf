@@ -1,0 +1,5 @@
+#extend(#(type)):
+  #export("message"):
+    <p>Welcome to Vapor!</p>
+  #endexport
+#endextend
