@@ -1,0 +1,7 @@
+#extend("index"):
+  #export("main"):
+    <p>#(totalRemaining)</p>
+    <p>#(daysRemaining)</p>
+    <p>#(totalRemainingPerDay)</p>
+  #endexport
+#endextend

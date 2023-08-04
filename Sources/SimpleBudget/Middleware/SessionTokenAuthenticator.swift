@@ -10,7 +10,6 @@ struct SessionTokenAuthenticator: AsyncSessionAuthenticator {
       .filter(\.$expiredAt > Date())
       .first()
     {
-
       request.auth.login(sessionToken)
     }
   }

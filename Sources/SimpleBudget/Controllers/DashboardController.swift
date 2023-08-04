@@ -1,16 +1,23 @@
 import Fluent
+import Foundation
 import Vapor
+
+struct Dashboard: Content {
+  var daysRemaining: Int
+  var totalRemaining: String
+  var totalRemainingPerDay: String
+}
 
 struct DashboardController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let dashboard = routes.grouped("api", "dashboard")
+    let dashboard = routes.grouped("dashboard")
       .grouped(SessionTokenAuthenticator())
-      .grouped(SessionToken.guardMiddleware())
+      .grouped(SessionToken.redirectMiddleware(path: "/authentication"))
 
     dashboard.get(use: index)
   }
 
-  func index(request: Request) async throws -> [String: String] {
+  func index(request: Request) async throws -> View {
     let sessionToken = try request.auth.require(SessionToken.self)
 
     guard
@@ -48,25 +55,20 @@ struct DashboardController: RouteCollection {
         return memo - goalService.amortized()
       })
 
-    let calendar = Calendar(identifier: .gregorian)
-    let startOfMonthComponents = calendar.dateComponents([.year, .month], from: Date())
-    guard let startOfMonth = calendar.date(from: startOfMonthComponents) else {
-      throw Abort(.internalServerError)
-    }
-    var dateComponents = DateComponents()
-    dateComponents.month = 1
-    dateComponents.second = -1
-    guard let endOfMonth = calendar.date(byAdding: dateComponents, to: startOfMonth) else {
+    guard let day = try? DatesService().daysUntilEndOfMonth() else {
       throw Abort(.internalServerError)
     }
 
-    let daysRemaining = calendar.dateComponents([.day], from: Date(), to: endOfMonth)
-    guard let day = daysRemaining.day else {
-      throw Abort(.internalServerError)
-    }
-    return [
-      "total": (accountTotal + savingTotal + goalTotal).description,
-      "daysRemaining": day.description,
-    ]
+    let totalRemaining = (accountTotal + goalTotal + savingTotal)
+    let totalRemainingPerDay = totalRemaining / Decimal(day)
+
+    return try await request.view.render(
+      "dashboard",
+      Dashboard(
+        daysRemaining: day,
+        totalRemaining: CurrencyService(totalRemaining).withoutCents() ?? "",
+        totalRemainingPerDay: CurrencyService(totalRemainingPerDay).withMilliCents() ?? ""
+      )
+    )
   }
 }

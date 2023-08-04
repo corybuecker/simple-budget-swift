@@ -16,13 +16,7 @@ func routes(_ app: Application) throws {
   app.get(
     "",
     use: { (Request) in
-      return try rootRoute(app: app, request: Request)
-    })
-
-  app.get(
-    "dashboard",
-    use: { (Request) in
-      return try rootRoute(app: app, request: Request)
+      return try await Request.view.render("index")
     })
 
   app.get(
@@ -30,14 +24,12 @@ func routes(_ app: Application) throws {
     use: { (Request) in
       return try rootRoute(app: app, request: Request)
     })
-
   app.get(
     "accounts",
     "**",
     use: { (Request) in
       return try rootRoute(app: app, request: Request)
     })
-
   app.get(
     "savings",
     use: { (Request) in
@@ -64,6 +56,7 @@ func routes(_ app: Application) throws {
       return try rootRoute(app: app, request: Request)
     })
 
+  try app.register(collection: ApiAccountsController())
   try app.register(collection: AccountsController())
   try app.register(collection: SavingsController())
   try app.register(collection: GoalsController())
