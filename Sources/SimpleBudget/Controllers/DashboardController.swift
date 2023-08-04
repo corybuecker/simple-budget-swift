@@ -10,7 +10,8 @@ struct Dashboard: Content {
 
 struct DashboardController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let dashboard = routes.grouped("dashboard")
+    let dashboard =
+      routes
       .grouped(SessionTokenAuthenticator())
       .grouped(SessionToken.redirectMiddleware(path: "/authentication"))
 

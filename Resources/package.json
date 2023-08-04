@@ -1,35 +1,6 @@
 {
-  "private": true,
-  "type": "module",
   "dependencies": {
-    "@heroicons/react": "2.0.18",
-    "class-transformer": "0.5.1",
-    "class-validator": "0.14.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-router-dom": "6.14.2",
-    "reflect-metadata": "0.1.13"
-  },
-  "devDependencies": {
     "@tailwindcss/forms": "0.5.4",
-    "@types/react": "18.2.18",
-    "@types/react-dom": "18.2.7",
-    "@types/react-router": "5.1.20",
-    "@types/react-router-dom": "5.3.3",
-    "@typescript-eslint/eslint-plugin": "6.2.1",
-    "@typescript-eslint/parser": "6.2.1",
-    "esbuild": "0.18.16",
-    "eslint": "8.46.0",
-    "eslint-config-prettier": "8.8.0",
-    "eslint-plugin-prettier": "5.0.0",
-    "eslint-plugin-react": "7.33.1",
-    "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
-  },
-  "scripts": {
-    "build:js": "npx esbuild --bundle --format=esm --sourcemap --outfile=../Public/app.js Assets/src/App.tsx",
-    "watch:js": "npm run build:js -- --watch",
-    "build:css": "npx tailwind --input Assets/css/tailwind.css --output ../Public/app.css",
-    "watch:css": "npm run build:css -- --watch"
+    "tailwindcss": "3.3.3"
   }
 }

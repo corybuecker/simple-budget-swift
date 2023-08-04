@@ -1,120 +1,191 @@
 import Fluent
+import Foundation
 import Vapor
 
-struct GoalBody: Content {
+struct DateValidatorResult: ValidatorResult {
+  public let isValid: Bool
+
+  var isFailure: Bool {
+    !isValid
+  }
+  var successDescription: String? = "Date is valid"
+  var failureDescription: String? = "Date is invalid"
+}
+
+struct DecimalValidatorResult: ValidatorResult {
+  public let isValid: Bool
+
+  var isFailure: Bool {
+    !isValid
+  }
+  var successDescription: String? = "Decimal is valid"
+  var failureDescription: String? = "Decimal is invalid"
+}
+
+struct DateValidator {
+  public static var valid: Validator<String> {
+    Validator<String>(validate: { (input) in
+      let dataFormatter = ISO8601DateFormatter()
+      dataFormatter.formatOptions = [.withFullDate]
+      if dataFormatter.date(from: input) != nil {
+        return DateValidatorResult(isValid: true)
+      }
+      return DateValidatorResult(isValid: false)
+    })
+  }
+}
+
+struct DecimalValidator {
+  public static var valid: Validator<String> {
+    Validator<String>(validate: { (input) in
+      if Decimal(string: input) != nil {
+        return DecimalValidatorResult(isValid: true)
+      }
+      return DecimalValidatorResult(isValid: false)
+    })
+  }
+}
+
+struct GoalSerializer: Content {
+  var id: String
   var name: String
-  var amount: Decimal
+  var amount: String?
+
   var completeAt: Date
   var recurrence: GoalRecurrence
 }
 
-struct AmortizedGoal: Content {
-  var id: UUID?
+struct GoalParams: Content, Validatable {
+  static func validations(_ validations: inout Vapor.Validations) {
+    validations.add(
+      "completeAt", as: String.self, is: DateValidator.valid, required: true,
+      customFailureDescription: "completion date is invalid")
+
+    validations.add(
+      "amount", as: String.self, is: DecimalValidator.valid, required: true,
+      customFailureDescription: "amount is invalid")
+
+    validations.add("name", as: String.self, is: !.empty, required: true)
+  }
+
   var name: String
   var amount: Decimal
-  var completeAt: Date
+  var completeAt: String
   var recurrence: GoalRecurrence
-  var amortized: Decimal
 }
 
-enum GoalsControllerErrors: Error {
-  case invalidDate
+struct HTML {
+  let value: View
 }
+
+extension HTML: AsyncResponseEncodable {
+  public func encodeResponse(for request: Request) async throws -> Response {
+    var headers = HTTPHeaders()
+    headers.add(name: .contentType, value: "text/html")
+    return .init(status: .unprocessableEntity, headers: headers, body: .init(buffer: value.data))
+  }
+}
+
 
 struct GoalsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let goals = routes.grouped("api", "goals")
+    let goals = routes.grouped("goals")
       .grouped(SessionTokenAuthenticator())
-      .grouped(SessionToken.guardMiddleware())
+      .grouped(SessionToken.redirectMiddleware(path: "/authentication"))
 
     goals.get(use: index)
+    goals.get("new", use: new)
     goals.get(":id", use: edit)
     goals.patch(":id", use: update)
     goals.post(use: create)
     goals.delete(":id", use: delete)
   }
 
-  func index(request: Request) async throws -> [AmortizedGoal] {
-    let goals = try await Goal.query(on: request.db).all()
-    let amortizedGoals = goals.map { goal in
-      let goalsService = GoalService(goal: goal)
-      return AmortizedGoal(
-        id: goal.id,
-        name: goal.name, amount: goal.amount, completeAt: goal.completeAt,
-        recurrence: goal.recurrence, amortized: goalsService.amortized())
-    }
-    return amortizedGoals
-  }
-
-  func edit(request: Request) async throws -> Goal {
-    guard
-      let goal = try await Goal.find(
-        request.parameters.get("id", as: UUID.self), on: request.db)
-    else {
-      throw Abort(.notFound)
-    }
-    return goal
-  }
-
-  func update(request: Request) async throws -> Goal {
-    guard
-      let goal = try await Goal.find(
-        request.parameters.get("id", as: UUID.self), on: request.db)
-    else {
-      throw Abort(.notFound)
-    }
-
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .custom({ decoder in
-      let container = try decoder.singleValueContainer()
-      let dateStr = try container.decode(String.self)
-      let formatter = ISO8601DateFormatter()
-      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-      if let parsedDate = formatter.date(from: dateStr) {
-        return parsedDate
-      }
-      throw GoalsControllerErrors.invalidDate
+  func index(request: Request) async throws -> View {
+    let goals = try await Goal.query(on: request.db).sort(\Goal.$name).all()
+    let serializedGoals = try goals.map({ (goal) -> GoalSerializer in
+      try GoalSerializer(
+        id: goal.requireID().uuidString,
+        name: goal.name,
+        amount: CurrencyService(goal.amount).withoutCents(),
+        completeAt: goal.completeAt,
+        recurrence: goal.recurrence
+      )
     })
-    let goalBody = try request.content.decode(GoalBody.self, using: decoder)
-
-    goal.name = goalBody.name
-    goal.amount = goalBody.amount
-    goal.completeAt = goalBody.completeAt
-    goal.recurrence = goalBody.recurrence
-
-    try await goal.save(on: request.db)
-
-    return goal
+    return try await request.view.render("goals/index", ["goals": serializedGoals])
   }
 
-  func create(request: Request) async throws -> Goal {
-    request.logger.debug("\(request.content)")
+  func new(request: Request) async throws -> View {
+    return try await request.view.render("goals/new")
+  }
 
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .custom({ decoder in
-      let container = try decoder.singleValueContainer()
-      let dateStr = try container.decode(String.self)
-      let formatter = ISO8601DateFormatter()
-      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-      if let parsedDate = formatter.date(from: dateStr) {
-        return parsedDate
-      }
-      throw GoalsControllerErrors.invalidDate
-    })
-    let goalBody = try request.content.decode(GoalBody.self, using: decoder)
-
+  func create(request: Request) async throws -> Response {
+    if let errors = try GoalParams.validations().validate(request: request).error?.description {
+      return try await  HTML(value: request.view.render("goals/new", ["errors": errors])).encodeResponse(for: request)
+    }
+    
+    let goalParams = try request.content.decode(GoalParams.self)
     let goal = try Goal(request.auth.require(SessionToken.self).user.requireID())
-    goal.name = goalBody.name
-    goal.amount = goalBody.amount
-    goal.completeAt = goalBody.completeAt
-    goal.recurrence = goalBody.recurrence
+
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.formatOptions = [.withFullDate]
+
+    goal.name = goalParams.name
+    goal.amount = goalParams.amount
+
+    if let parsedDate = dateFormatter.date(from: goalParams.completeAt) {
+      goal.completeAt = parsedDate
+    }
+
+    goal.recurrence = goalParams.recurrence
 
     try await goal.save(on: request.db)
 
-    return goal
+    return try request.redirect(to: "/goals/\(goal.requireID())")
   }
 
-  func delete(request: Request) async throws -> Bool {
+  func edit(request: Request) async throws -> View {
+    guard
+      let goal = try await Goal.find(
+        request.parameters.get("id", as: UUID.self), on: request.db)
+    else {
+      throw Abort(.notFound)
+    }
+    let serializedGoal = try GoalSerializer(
+      id: goal.requireID().uuidString,
+      name: goal.name,
+      amount: goal.amount.description,
+      completeAt: goal.completeAt,
+      recurrence: goal.recurrence
+    )
+    return try await request.view.render("goals/edit", ["goal": serializedGoal])
+  }
+
+  func update(request: Request) async throws -> View {
+    guard
+      let goal = try await Goal.find(
+        request.parameters.get("id", as: UUID.self), on: request.db)
+    else {
+      throw Abort(.notFound)
+    }
+
+    let goalBody = try request.content.decode(GoalParams.self)
+
+    goal.name = goalBody.name
+    goal.amount = goalBody.amount
+
+    try await goal.save(on: request.db)
+    let serializedGoal = try GoalSerializer(
+      id: goal.requireID().uuidString,
+      name: goal.name,
+      amount: goal.amount.description,
+      completeAt: goal.completeAt,
+      recurrence: goal.recurrence
+    )
+    return try await request.view.render("goals/edit", ["goal": serializedGoal])
+  }
+
+  func delete(request: Request) async throws -> Response {
     guard
       let goal = try await Goal.find(
         request.parameters.get("id", as: UUID.self), on: request.db)
@@ -122,6 +193,6 @@ struct GoalsController: RouteCollection {
       throw Abort(.notFound)
     }
     try await goal.delete(on: request.db)
-    return true
+    return request.redirect(to: "/goals")
   }
 }

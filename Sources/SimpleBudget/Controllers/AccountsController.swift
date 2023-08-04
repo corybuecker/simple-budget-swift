@@ -16,7 +16,7 @@ struct AccountParams: Content {
 
 struct AccountsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    let accounts = routes.grouped("leaf", "accounts")
+    let accounts = routes.grouped("accounts")
       .grouped(SessionTokenAuthenticator())
       .grouped(SessionToken.redirectMiddleware(path: "/authentication"))
 
@@ -32,8 +32,10 @@ struct AccountsController: RouteCollection {
     let accounts = try await Account.query(on: request.db).sort(\Account.$name).all()
     let serializedAccounts = try accounts.map({ (account) -> AccountSerializer in
       try AccountSerializer(
-        id: account.requireID().uuidString, name: account.name,
-        amount: CurrencyService(account.amount).withCents(), debt: account.debt
+        id: account.requireID().uuidString,
+        name: account.name,
+        amount: CurrencyService(account.amount).withCents(),
+        debt: account.debt
       )
     })
     return try await request.view.render("accounts/index", ["accounts": serializedAccounts])
@@ -53,7 +55,7 @@ struct AccountsController: RouteCollection {
 
     try await account.save(on: request.db)
 
-    return try request.redirect(to: "/leaf/accounts/\(account.requireID())")
+    return try request.redirect(to: "/accounts/\(account.requireID())")
   }
 
   func edit(request: Request) async throws -> View {
@@ -77,7 +79,7 @@ struct AccountsController: RouteCollection {
       throw Abort(.notFound)
     }
 
-    let accountBody = try request.content.decode(AccountBody.self)
+    let accountBody = try request.content.decode(AccountParams.self)
 
     account.name = accountBody.name
     account.amount = accountBody.amount
@@ -90,7 +92,7 @@ struct AccountsController: RouteCollection {
     return try await request.view.render("accounts/edit", ["account": serializedAccount])
   }
 
-  func delete(request: Request) async throws -> Bool {
+  func delete(request: Request) async throws -> Response {
     guard
       let account = try await Account.find(
         request.parameters.get("id", as: UUID.self), on: request.db)
@@ -98,6 +100,7 @@ struct AccountsController: RouteCollection {
       throw Abort(.notFound)
     }
     try await account.delete(on: request.db)
-    return true
+
+    return request.redirect(to: "/accounts")
   }
 }
