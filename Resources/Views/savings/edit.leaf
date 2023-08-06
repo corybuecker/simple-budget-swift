@@ -1,0 +1,24 @@
+#extend("index"):
+  #export("main"):
+    <div class="flex flex-col gap-4">
+      <form method="patch" action="/savings/#(saving.id)">
+        <div>
+          <label class="block text-xs font-medium text-gray-700" for="name">
+            Name
+          </label>
+          <input class="mt-1 w-full md:w-64 rounded-md border-gray-200 shadow-sm sm:text-sm" name="name" id="name" value="#(saving.name)" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700" for="amount">
+            Amount
+          </label>
+          <input class="mt-1 w-full md:w-64 rounded-md border-gray-200 shadow-sm sm:text-sm" inputMode="decimal" value="#(saving.amount)" name="amount" id="amount" />
+        </div>
+        <button type="submit">
+          Submit
+        </button>
+      </form>
+    </div>
+  #endexport
+#endextend
+

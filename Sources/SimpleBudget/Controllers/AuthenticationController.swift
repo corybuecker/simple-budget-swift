@@ -105,6 +105,6 @@ struct AuthenticationController: RouteCollection {
 
     request.auth.login(sessionToken)
 
-    return request.redirect(to: "/dashboard")
+    return request.redirect(to: "/")
   }
 }

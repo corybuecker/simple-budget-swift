@@ -4,22 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/app.css">
-    <!--
-    JSPM Generator Import Map
-    Edit URL: https://generator.jspm.io/#Y2NhYGBiDs0rySzJSU1hcMjILynPLEpN0S8pLUrKdzDXM9Yz0E/JLC6BCOilFhsZGJrrphbn6mUVM5SnJumWZZYk5hQ7GOuZ6BkAAA2BwFxOAA
-    -->
-    <script type="importmap">
-    {
-      "imports": {
-        "@hotwired/turbo/dist/turbo.es2017-esm.js": "https://ga.jspm.io/npm:@hotwired/turbo@7.3.0/dist/turbo.es2017-esm.js",
-        "web-vitals": "https://ga.jspm.io/npm:web-vitals@3.4.0/dist/web-vitals.js"
+      <!--
+        JSPM Generator Import Map
+        Edit URL: https://generator.jspm.io/#TctBCoAgEEBRoajTNJoGbb1EB0gcaEILnLGuH9Gm7X/8rlWq6ZdDSBJG5bdTbioYNQvlmip7BxbGH0gt4fQzODA6EssXANmacR6QM+ysbgzDRbKm95/APGHr55xnAA
+      -->
+      <script type="importmap">
+      {
+        "imports": {
+          "@hotwired/stimulus": "https://ga.jspm.io/npm:@hotwired/stimulus@3.2.1/dist/stimulus.js",
+          "@hotwired/turbo/dist/turbo.es2017-esm.js": "https://ga.jspm.io/npm:@hotwired/turbo@7.3.0/dist/turbo.es2017-esm.js",
+          "web-vitals": "https://ga.jspm.io/npm:web-vitals@3.4.0/dist/web-vitals.js"
+        }
       }
-    }
-    </script>
+      </script>
     <script type="module">
       import * as Turbo from '@hotwired/turbo/dist/turbo.es2017-esm.js';
       import {onFID, onFCP} from 'web-vitals';
+      import { Application } from "@hotwired/stimulus"
 
+      window.Stimulus = Application.start()
       onFID(console.log);
       onFCP(console.log);
     </script>
@@ -27,10 +30,10 @@
   <body>
     <nav class="bg-slate-800">
       <div class="flex items-center space-x-4 px-4 py-2">
-        <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/dashboard">
+        <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/">
           Dashboard
         </a>
-        <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/leaf/accounts">
+        <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/accounts">
           Accounts
         </a>
         <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/savings">
@@ -41,7 +44,7 @@
         </a>
       </div>
     </nav>
-    <main>
+    <main class="px-2 pt-2">
       #import("main")
     </main>
   </body>

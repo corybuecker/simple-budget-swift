@@ -94,3 +94,4 @@ Public/app.css
 Public/app.js
 .swiftpm
 Public/app.js.map
+.env

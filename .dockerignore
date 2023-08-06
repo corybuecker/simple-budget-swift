@@ -95,3 +95,4 @@ Public/app.js
 .swiftpm
 Public/app.js.map
 .git
+.env

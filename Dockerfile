@@ -19,8 +19,7 @@ RUN swift build -c release -Xswiftc -g
 WORKDIR /app/Resources
 
 RUN npm ci
-RUN npm run build:js
-RUN npm run build:css
+RUN npx tailwind -c tailwind.config.js -o ../Public/app.css
 
 FROM swift:slim
 

@@ -1,7 +1,7 @@
 #extend("index"):
   #export("main"):
     <div class="flex flex-col gap-4">
-      <form method="patch" action="/leaf/accounts/#(account.id)">
+      <form method="patch" action="/accounts/#(account.id)">
         <div>
           <label class="block text-xs font-medium text-gray-700" for="name">
             Name
