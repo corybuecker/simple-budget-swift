@@ -51,7 +51,7 @@ struct GoalSerializer: Content {
   var name: String
   var amount: String?
 
-  var completeAt: Date
+  var completeAt: String
   var recurrence: GoalRecurrence
 }
 
@@ -86,7 +86,6 @@ extension HTML: AsyncResponseEncodable {
   }
 }
 
-
 struct GoalsController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
     let goals = routes.grouped("goals")
@@ -103,12 +102,14 @@ struct GoalsController: RouteCollection {
 
   func index(request: Request) async throws -> View {
     let goals = try await Goal.query(on: request.db).sort(\Goal.$name).all()
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.formatOptions = [.withFullDate]
     let serializedGoals = try goals.map({ (goal) -> GoalSerializer in
       try GoalSerializer(
         id: goal.requireID().uuidString,
         name: goal.name,
         amount: CurrencyService(goal.amount).withoutCents(),
-        completeAt: goal.completeAt,
+        completeAt: dateFormatter.string(from: goal.completeAt),
         recurrence: goal.recurrence
       )
     })
@@ -121,9 +122,10 @@ struct GoalsController: RouteCollection {
 
   func create(request: Request) async throws -> Response {
     if let errors = try GoalParams.validations().validate(request: request).error?.description {
-      return try await  HTML(value: request.view.render("goals/new", ["errors": errors])).encodeResponse(for: request)
+      return try await HTML(value: request.view.render("goals/new", ["errors": errors]))
+        .encodeResponse(for: request)
     }
-    
+
     let goalParams = try request.content.decode(GoalParams.self)
     let goal = try Goal(request.auth.require(SessionToken.self).user.requireID())
 
@@ -151,11 +153,13 @@ struct GoalsController: RouteCollection {
     else {
       throw Abort(.notFound)
     }
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.formatOptions = [.withFullDate]
     let serializedGoal = try GoalSerializer(
       id: goal.requireID().uuidString,
       name: goal.name,
       amount: goal.amount.description,
-      completeAt: goal.completeAt,
+      completeAt: dateFormatter.string(from: goal.completeAt),
       recurrence: goal.recurrence
     )
     return try await request.view.render("goals/edit", ["goal": serializedGoal])
@@ -171,15 +175,25 @@ struct GoalsController: RouteCollection {
 
     let goalBody = try request.content.decode(GoalParams.self)
 
+    let dataFormatter = ISO8601DateFormatter()
+    dataFormatter.formatOptions = [.withFullDate]
+
     goal.name = goalBody.name
     goal.amount = goalBody.amount
+    goal.recurrence = goalBody.recurrence
+
+    if let parsedDate = dataFormatter.date(from: goalBody.completeAt) {
+      goal.completeAt = parsedDate
+    }
 
     try await goal.save(on: request.db)
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.formatOptions = [.withFullDate]
     let serializedGoal = try GoalSerializer(
       id: goal.requireID().uuidString,
       name: goal.name,
       amount: goal.amount.description,
-      completeAt: goal.completeAt,
+      completeAt: dateFormatter.string(from: goal.completeAt),
       recurrence: goal.recurrence
     )
     return try await request.view.render("goals/edit", ["goal": serializedGoal])
