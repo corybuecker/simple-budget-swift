@@ -28,6 +28,11 @@
           <select name="recurrence"  id="recurrence">
             <option value=""></option>
             <option
+              #if(goal.recurrence == "never"):
+                selected
+              #endif
+              value="never">Never</option>
+            <option
               #if(goal.recurrence == "daily"):
                 selected
               #endif
@@ -43,7 +48,7 @@
               #endif
               value="monthly">Monthly</option>
             <option
-              #if(goal.recurrence == "monthly"):
+              #if(goal.recurrence == "quarterly"):
                 selected
               #endif
               value="quarterly">Quarterly</option>

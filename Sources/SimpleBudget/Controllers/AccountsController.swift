@@ -8,7 +8,15 @@ struct AccountSerializer: Content {
   var debt: Bool
 }
 
-struct AccountParams: Content {
+struct AccountParams: Content, Validatable {
+  static func validations(_ validations: inout Vapor.Validations) {
+    validations.add(
+      "amount", as: String.self, is: DecimalValidator.valid, required: true,
+      customFailureDescription: "amount is invalid")
+
+    validations.add("name", as: String.self, is: !.empty, required: true)
+  }
+
   var name: String
   var amount: Decimal
   var debt: Bool
@@ -71,12 +79,17 @@ struct AccountsController: RouteCollection {
     return try await request.view.render("accounts/edit", ["account": serializedAccount])
   }
 
-  func update(request: Request) async throws -> View {
+  func update(request: Request) async throws -> Response {
     guard
       let account = try await Account.find(
         request.parameters.get("id", as: UUID.self), on: request.db)
     else {
       throw Abort(.notFound)
+    }
+
+    if let errors = try AccountParams.validations().validate(request: request).error?.description {
+      return try await HTML(value: request.view.render("accounts/edit/\(account.requireID())", ["errors": errors]))
+        .encodeResponse(for: request)
     }
 
     let accountBody = try request.content.decode(AccountParams.self)
@@ -86,10 +99,8 @@ struct AccountsController: RouteCollection {
     account.debt = accountBody.debt
 
     try await account.save(on: request.db)
-    let serializedAccount = try AccountSerializer(
-      id: account.requireID().uuidString, name: account.name, amount: account.amount.description,
-      debt: account.debt)
-    return try await request.view.render("accounts/edit", ["account": serializedAccount])
+
+    return request.redirect(to: "/accounts")
   }
 
   func delete(request: Request) async throws -> Response {
@@ -102,5 +113,9 @@ struct AccountsController: RouteCollection {
     try await account.delete(on: request.db)
 
     return request.redirect(to: "/accounts")
+  }
+
+  private func getAccount() -> Account? {
+    return nil
   }
 }

@@ -27,6 +27,7 @@
           </label>
           <select name="recurrence" id="recurrence">
             <option value=""></option>
+            <option value="never">Never</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
