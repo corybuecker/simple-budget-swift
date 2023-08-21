@@ -101,9 +101,15 @@ struct GoalsController: RouteCollection {
   }
 
   func index(request: Request) async throws -> View {
-    let goals = try await Goal.query(on: request.db).sort(\Goal.$name).all()
+    let user = try request.auth.require(SessionToken.self).user
+    let goals = try await Goal.query(on: request.db)
+      .filter(\Goal.$user.$id == user.requireID())
+      .sort(\Goal.$name, .ascending)
+      .all()
+
     let dateFormatter = ISO8601DateFormatter()
     dateFormatter.formatOptions = [.withFullDate]
+
     let serializedGoals = try goals.map({ (goal) -> GoalSerializer in
       try GoalSerializer(
         id: goal.requireID().uuidString,
@@ -165,12 +171,17 @@ struct GoalsController: RouteCollection {
     return try await request.view.render("goals/edit", ["goal": serializedGoal])
   }
 
-  func update(request: Request) async throws -> View {
+  func update(request: Request) async throws -> Response {
     guard
       let goal = try await Goal.find(
         request.parameters.get("id", as: UUID.self), on: request.db)
     else {
       throw Abort(.notFound)
+    }
+
+    if let errors = try GoalParams.validations().validate(request: request).error?.description {
+      return try await HTML(value: request.view.render("goals/edit/\(goal.requireID())", ["errors": errors]))
+        .encodeResponse(for: request)
     }
 
     let goalBody = try request.content.decode(GoalParams.self)
@@ -187,16 +198,8 @@ struct GoalsController: RouteCollection {
     }
 
     try await goal.save(on: request.db)
-    let dateFormatter = ISO8601DateFormatter()
-    dateFormatter.formatOptions = [.withFullDate]
-    let serializedGoal = try GoalSerializer(
-      id: goal.requireID().uuidString,
-      name: goal.name,
-      amount: goal.amount.description,
-      completeAt: dateFormatter.string(from: goal.completeAt),
-      recurrence: goal.recurrence
-    )
-    return try await request.view.render("goals/edit", ["goal": serializedGoal])
+
+    return request.redirect(to: "/goals")
   }
 
   func delete(request: Request) async throws -> Response {

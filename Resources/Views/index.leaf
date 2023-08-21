@@ -19,7 +19,7 @@
       </script>
     <script type="module">
       import * as Turbo from '@hotwired/turbo/dist/turbo.es2017-esm.js';
-      import {onFID, onFCP} from 'web-vitals';
+      import { onFID, onFCP } from 'web-vitals';
       import { Application } from "@hotwired/stimulus"
 
       window.Stimulus = Application.start()
@@ -28,8 +28,8 @@
     </script>
   </head>
   <body>
-    <nav class="bg-slate-800">
-      <div class="flex items-center space-x-4 px-4 py-2">
+    <nav class="@container bg-slate-800">
+      <div class="flex justify-center @lg:justify-start items-center space-x-4 px-4 py-2">
         <a class="text-white hover:bg-slate-600 rounded-md p-2" href="/">
           Dashboard
         </a>
