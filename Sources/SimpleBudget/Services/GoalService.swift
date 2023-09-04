@@ -21,7 +21,15 @@ struct GoalService {
     return dailyAmount() * Decimal(elapsedDays())
   }
 
-  private func dailyAmount() -> Decimal {
+  func dailyAmount() -> Decimal {
+    if Date() >= self.goal.completeAt {
+      return Decimal(0)
+    }
+
+    if Date() < startDate() {
+      return Decimal(0)
+    }
+
     return self.goal.amount
       / Decimal(DateInterval(start: startDate(), end: self.goal.completeAt).duration / day)
   }

@@ -3,5 +3,7 @@
     <p>#(totalRemaining)</p>
     <p>#(daysRemaining)</p>
     <p>#(totalRemainingPerDay)</p>
+    <h2>Daily goal total</h2>
+    <p>#(goalsDailyAmount)</p>
   #endexport
 #endextend

@@ -74,7 +74,7 @@ struct SavingsController: RouteCollection {
       throw Abort(.notFound)
     }
 
-    let savingBody = try request.content.decode(GoalParams.self)
+    let savingBody = try request.content.decode(SavingParams.self)
 
     saving.name = savingBody.name
     saving.amount = savingBody.amount

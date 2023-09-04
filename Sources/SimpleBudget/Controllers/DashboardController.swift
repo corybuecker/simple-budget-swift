@@ -6,6 +6,7 @@ struct Dashboard: Content {
   var daysRemaining: Int
   var totalRemaining: String
   var totalRemainingPerDay: String
+  var goalsDailyAmount: String
 }
 
 struct DashboardController: RouteCollection {
@@ -56,6 +57,14 @@ struct DashboardController: RouteCollection {
         return memo - goalService.amortized()
       })
 
+    let goalsDailyAmount = user.goals.reduce(
+      Decimal(0.0),
+      { memo, goal in
+        let goalService = GoalService(goal: goal)
+
+        return memo + goalService.dailyAmount()
+      })
+
     guard let day = try? DatesService().daysUntilEndOfMonth() else {
       throw Abort(.internalServerError)
     }
@@ -68,7 +77,8 @@ struct DashboardController: RouteCollection {
       Dashboard(
         daysRemaining: day,
         totalRemaining: CurrencyService(totalRemaining).withoutCents() ?? "",
-        totalRemainingPerDay: CurrencyService(totalRemainingPerDay).withMilliCents() ?? ""
+        totalRemainingPerDay: CurrencyService(totalRemainingPerDay).withMilliCents() ?? "",
+        goalsDailyAmount: CurrencyService(goalsDailyAmount).withMilliCents() ?? ""
       )
     )
   }

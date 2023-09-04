@@ -12,7 +12,7 @@ struct AccountParams: Content, Validatable {
   static func validations(_ validations: inout Vapor.Validations) {
     validations.add(
       "amount", as: String.self, is: DecimalValidator.valid, required: true,
-      customFailureDescription: "amount is invalid")
+      customFailureDescription: "is not a valid number")
 
     validations.add("name", as: String.self, is: !.empty, required: true)
   }
@@ -20,6 +20,11 @@ struct AccountParams: Content, Validatable {
   var name: String
   var amount: Decimal
   var debt: Bool
+}
+
+struct AccountErrors: Content {
+  var field: String
+  var error: String?
 }
 
 struct AccountsController: RouteCollection {
@@ -37,7 +42,10 @@ struct AccountsController: RouteCollection {
   }
 
   func index(request: Request) async throws -> View {
-    let accounts = try await Account.query(on: request.db).sort(\Account.$name).all()
+    let accounts = try await Account.query(on: request.db).join(
+      User.self, on: \Account.$user.$id == \User.$id
+    ).filter(User.self, \User.$id == request.auth.require(SessionToken.self).user.requireID()).all()
+
     let serializedAccounts = try accounts.map({ (account) -> AccountSerializer in
       try AccountSerializer(
         id: account.requireID().uuidString,
@@ -54,9 +62,29 @@ struct AccountsController: RouteCollection {
   }
 
   func create(request: Request) async throws -> Response {
-    let accountParams = try request.content.decode(AccountParams.self)
+    let accountErrors: [AccountErrors] = try AccountParams.validations().validate(request: request)
+      .results.filter({
+        result in
+        result.isFailure
+      }).map({ request in
+        AccountErrors(
+          field: request.key.stringValue,
+          error: request.customFailureDescription ?? request.failureDescription)
+      })
 
+    if !accountErrors.isEmpty {
+      let response = request.view.render("accounts/create", ["errors": accountErrors])
+        .encodeResponse(for: request)
+      return try await response.map({ response in
+        response.headers.contentType = HTTPMediaType(
+          type: "text/vnd.turbo-stream.html", subType: "charset=utf-8")
+        return response
+      }).get()
+    }
+
+    let accountParams = try request.content.decode(AccountParams.self)
     let account = try Account(request.auth.require(SessionToken.self).user.requireID())
+
     account.name = accountParams.name
     account.amount = accountParams.amount
     account.debt = accountParams.debt
@@ -87,9 +115,24 @@ struct AccountsController: RouteCollection {
       throw Abort(.notFound)
     }
 
-    if let errors = try AccountParams.validations().validate(request: request).error?.description {
-      return try await HTML(value: request.view.render("accounts/edit/\(account.requireID())", ["errors": errors]))
+    let accountErrors: [AccountErrors] = try AccountParams.validations().validate(request: request)
+      .results.filter({
+        result in
+        result.isFailure
+      }).map({ request in
+        AccountErrors(
+          field: request.key.stringValue,
+          error: request.customFailureDescription ?? request.failureDescription)
+      })
+
+    if !accountErrors.isEmpty {
+      let response = request.view.render("accounts/update", ["errors": accountErrors])
         .encodeResponse(for: request)
+      return try await response.map({ response in
+        response.headers.contentType = HTTPMediaType(
+          type: "text/vnd.turbo-stream.html", subType: "charset=utf-8")
+        return response
+      }).get()
     }
 
     let accountBody = try request.content.decode(AccountParams.self)
