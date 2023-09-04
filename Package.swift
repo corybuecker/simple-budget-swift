@@ -13,11 +13,13 @@ let package = Package(
     .package(url: "https://github.com/vapor/leaf.git", from: "4.2.4"),
   ],
   targets: [
-    .executableTarget(name: "SimpleBudget", dependencies: [
-      .product(name: "Fluent", package: "fluent"),
-      .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-      .product(name: "Leaf", package: "leaf"),
-      .product(name: "Vapor", package: "vapor"),
-    ])
+    .executableTarget(
+      name: "SimpleBudget",
+      dependencies: [
+        .product(name: "Fluent", package: "fluent"),
+        .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+        .product(name: "Leaf", package: "leaf"),
+        .product(name: "Vapor", package: "vapor"),
+      ])
   ]
 )

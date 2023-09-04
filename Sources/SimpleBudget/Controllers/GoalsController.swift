@@ -12,16 +12,6 @@ struct DateValidatorResult: ValidatorResult {
   var failureDescription: String? = "Date is invalid"
 }
 
-struct DecimalValidatorResult: ValidatorResult {
-  public let isValid: Bool
-
-  var isFailure: Bool {
-    !isValid
-  }
-  var successDescription: String? = "Decimal is valid"
-  var failureDescription: String? = "Decimal is invalid"
-}
-
 struct DateValidator {
   public static var valid: Validator<String> {
     Validator<String>(validate: { (input) in
@@ -31,17 +21,6 @@ struct DateValidator {
         return DateValidatorResult(isValid: true)
       }
       return DateValidatorResult(isValid: false)
-    })
-  }
-}
-
-struct DecimalValidator {
-  public static var valid: Validator<String> {
-    Validator<String>(validate: { (input) in
-      if Decimal(string: input) != nil {
-        return DecimalValidatorResult(isValid: true)
-      }
-      return DecimalValidatorResult(isValid: false)
     })
   }
 }
@@ -180,8 +159,10 @@ struct GoalsController: RouteCollection {
     }
 
     if let errors = try GoalParams.validations().validate(request: request).error?.description {
-      return try await HTML(value: request.view.render("goals/edit/\(goal.requireID())", ["errors": errors]))
-        .encodeResponse(for: request)
+      return try await HTML(
+        value: request.view.render("goals/edit/\(goal.requireID())", ["errors": errors])
+      )
+      .encodeResponse(for: request)
     }
 
     let goalBody = try request.content.decode(GoalParams.self)

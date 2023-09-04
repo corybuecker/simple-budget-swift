@@ -1,6 +1,7 @@
 #extend("index"):
   #export("main"):
     <div class="flex flex-col gap-4">
+      <div id="errors"></div>
       <form method="post" action="/accounts">
         <div>
           <label class="block text-xs font-medium text-gray-700" for="name">
