@@ -29,4 +29,4 @@ COPY --from=builder /app/.build/release/SimpleBudget /app/SimpleBudget
 
 WORKDIR /app
 
-CMD ["/app/SimpleBudget", "serve", "--bind", "0.0.0.0:8080"]
+CMD ["/app/SimpleBudget", "serve", "--bind", "0.0.0.0:4000"]
