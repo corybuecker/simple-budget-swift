@@ -7,7 +7,7 @@ let package = Package(
     .macOS("13.3")
   ],
   dependencies: [
-    .package(url: "https://github.com/vapor/vapor.git", from: "4.78.2"),
+    .package(url: "https://github.com/vapor/vapor.git", from: "4.84.6"),
     .package(url: "https://github.com/vapor/fluent.git", from: "4.8.0"),
     .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.8.0"),
     .package(url: "https://github.com/vapor/leaf.git", from: "4.2.4"),

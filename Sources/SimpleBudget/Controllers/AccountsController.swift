@@ -44,7 +44,8 @@ struct AccountsController: RouteCollection {
   func index(request: Request) async throws -> View {
     let accounts = try await Account.query(on: request.db).join(
       User.self, on: \Account.$user.$id == \User.$id
-    ).filter(User.self, \User.$id == request.auth.require(SessionToken.self).user.requireID()).all()
+    ).filter(User.self, \User.$id == request.auth.require(SessionToken.self).user.requireID())
+      .sort(\Account.$name).all()
 
     let serializedAccounts = try accounts.map({ (account) -> AccountSerializer in
       try AccountSerializer(
@@ -91,26 +92,26 @@ struct AccountsController: RouteCollection {
 
     try await account.save(on: request.db)
 
-    return try request.redirect(to: "/accounts/\(account.requireID())")
+    return request.redirect(to: "/accounts")
   }
 
   func edit(request: Request) async throws -> View {
     guard
-      let account = try await Account.find(
-        request.parameters.get("id", as: UUID.self), on: request.db)
+      let account = try await loadAccount(request: request)
     else {
       throw Abort(.notFound)
     }
+
     let serializedAccount = try AccountSerializer(
       id: account.requireID().uuidString, name: account.name, amount: account.amount.description,
       debt: account.debt)
+
     return try await request.view.render("accounts/edit", ["account": serializedAccount])
   }
 
   func update(request: Request) async throws -> Response {
     guard
-      let account = try await Account.find(
-        request.parameters.get("id", as: UUID.self), on: request.db)
+      let account = try await loadAccount(request: request)
     else {
       throw Abort(.notFound)
     }
@@ -148,17 +149,24 @@ struct AccountsController: RouteCollection {
 
   func delete(request: Request) async throws -> Response {
     guard
-      let account = try await Account.find(
-        request.parameters.get("id", as: UUID.self), on: request.db)
+      let account = try await loadAccount(request: request)
     else {
       throw Abort(.notFound)
     }
+
     try await account.delete(on: request.db)
 
     return request.redirect(to: "/accounts")
   }
 
-  private func getAccount() -> Account? {
-    return nil
+  private func loadAccount(request: Request) async throws -> Account? {
+    guard let accountId = request.parameters.get("id", as: UUID.self) else {
+      return nil
+    }
+
+    return try await Account.query(on: request.db).join(
+      User.self, on: \User.$id == \Account.$user.$id
+    ).filter(User.self, \User.$id == request.auth.require(SessionToken.self).user.requireID())
+      .filter(\Account.$id == accountId).first()
   }
 }

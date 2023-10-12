@@ -1,5 +1,5 @@
 steps:
   - name: "gcr.io/kaniko-project/executor:latest"
     args:
-      - --destination=us-central1-docker.pkg.dev/bueckered-272522/houston/simple-budget
+      - --destination=us-central1-docker.pkg.dev/bueckered-272522/github-actions-repo/simple-budget
       - --cache=true
